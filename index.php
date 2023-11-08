@@ -10,7 +10,7 @@ if ((isset($_SERVER['APPLICATION_ENV'])
 ) {
     ini_set('display_errors', 1);
 } else {
-    ini_set('display_errors', 0);
+    ini_set('display_errors', 1);
 }
 
 require 'bootstrap.php';
