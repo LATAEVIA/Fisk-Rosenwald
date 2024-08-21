@@ -402,7 +402,7 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
         $results = $this->getAdapter()->getSubjectValues($this->resource, $page, $perPage, $propertyId, $resourceType, $siteId);
         $subjectValues = [];
         foreach ($results as $result) {
-            $index = sprintf('%s-%s', $result['property_id'], $result['resource_template_property_id']);
+            $index = $result['property_alternate_label'] ?: $result['property_label'];
             $result['val'] = new ValueRepresentation($result['val'], $this->getServiceLocator());
             $subjectValues[$index][] = $result;
         }
@@ -548,10 +548,19 @@ abstract class AbstractResourceEntityRepresentation extends AbstractEntityRepres
         $perPage = $options['perPage'] ?? null;
         $siteId = $options['siteId'] ?? null;
 
+        $subjectValuePropertiesItems = $adapter->getSubjectValueProperties($this->resource, 'items', $siteId);
+        $subjectValuePropertiesItemSets = $adapter->getSubjectValueProperties($this->resource, 'item_sets', $siteId);
+        $subjectValuePropertiesMedia = $adapter->getSubjectValueProperties($this->resource, 'media', $siteId);
+
+        if (!$subjectValuePropertiesItems && !$subjectValuePropertiesItemSets && !$subjectValuePropertiesMedia) {
+            // This resource has no subject values;
+            return null;
+        }
+
         $resourcePropertiesAll = [
-            'items' => $adapter->getSubjectValueProperties($this->resource, 'items', $siteId),
-            'item_sets' => $adapter->getSubjectValueProperties($this->resource, 'item_sets', $siteId),
-            'media' => $adapter->getSubjectValueProperties($this->resource, 'media', $siteId),
+            'items' => $subjectValuePropertiesItems,
+            'item_sets' => $subjectValuePropertiesItemSets,
+            'media' => $subjectValuePropertiesMedia,
         ];
         // Find the default resource property by detecting the first resource
         // type that has properties.
